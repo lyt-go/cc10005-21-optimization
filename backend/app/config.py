@@ -1,6 +1,7 @@
 """运行配置：端口、跨域、运行环境。"""
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 
 
@@ -17,6 +18,10 @@ class Settings:
     )
     page_size_default: int = 20
     page_size_max: int = 200
+    # 解析-去噪流水线的 SQLite 落库位置；允许用环境变量指到临时库做端到端验证。
+    pipeline_db_path: str = field(
+        default_factory=lambda: os.environ.get("PIPELINE_DB_PATH", "data/pipeline.sqlite3")
+    )
 
 
 settings = Settings()

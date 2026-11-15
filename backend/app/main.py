@@ -5,14 +5,25 @@
 """
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.pipeline.service import pipeline_service
 from app.routers import ROUTERS
 from app.store import store
 
-app = FastAPI(title="多源异构数据接入引擎", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 建表、装载种子并物化首版解析/清洗节点；已有落库数据时保持不变（刷新/重启一致）。
+    pipeline_service.initialize()
+    yield
+
+
+app = FastAPI(title="多源异构数据接入引擎", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
